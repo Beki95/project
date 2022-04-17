@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:latest
+    env_file:
+      - .env-test
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    container_name: postgres
+
+  web:
+    build: .
+    env_file:
+      - .env-test
+    volumes:
+      - ./:/app/
+      - ./static:/app/static/
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+    container_name: web
+    command: sh -c "./manage.py collectstatic --no-input &&
+                    ./manage.py migrate &&
+                    ./manage.py runserver 0.0.0.0:8000"
+
+
+volumes:
+  postgres_data:
